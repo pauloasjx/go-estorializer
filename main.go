@@ -2,9 +2,11 @@ package main
 
 import (
 	"database/sql"
+	//"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	//"os"
 	//"strconv"
 
@@ -62,8 +64,26 @@ func ProcessUrl(url string) {
 	defer response.Body.Close()
 
 	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
 
 	body_text, err := html2text.FromString(string(body))
+	if err != nil {
+		panic(err)
+	}
 
-	fmt.Println(body_text)
+	//var text string
+	//json.Unmarshal([]byte(body_text), &text)
+
+	//fmt.Println(text)
+
+	regex, err := regexp.Compile(`(\b[^\s]+\b)`)
+	if err != nil {
+		panic(err)
+	}
+
+	words := regex.FindAllStringSubmatch(body_text, -1)
+
+	fmt.Println(words)
 }
