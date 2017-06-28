@@ -2,14 +2,13 @@ package main
 
 import (
 	"database/sql"
-	//"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
-	//"sync"
-	//"os"
-	//"strconv"
+	"sort"
+	"strconv"
 
 	"github.com/jaytaylor/html2text"
 	_ "github.com/mattn/go-sqlite3"
@@ -20,8 +19,27 @@ type Visit struct {
 	VisitCount int
 }
 
+type Word struct {
+	Word  string
+	Count *int
+}
+
+type ByCount []Word
+
+func (slice ByCount) Len() int {
+	return len(slice)
+}
+
+func (slice ByCount) Less(i, j int) bool {
+	return *slice[i].Count > *slice[j].Count
+}
+
+func (slice ByCount) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}
+
 func main() {
-	var words []string
+	var words = []Word{}
 
 	database, err := sql.Open("sqlite3", "./History")
 	if err != nil {
@@ -38,20 +56,41 @@ func main() {
 
 	for visits.Next() {
 		visits.Scan(&visit.Url, &visit.VisitCount)
-		//fmt.Println(visit.Url + " - " + strconv.Itoa(visit.VisitCount))
+		fmt.Println(visit.Url + " - " + strconv.Itoa(visit.VisitCount))
 
 		//go ProcessUrl(visit.Url)
 		visit_words := ProcessUrl(visit.Url)
 
 		if visit_words != nil {
+		Loop:
 			for _, visit_word := range visit_words {
-				words = append(words, string(visit_word[0]))
+				for _, word := range words {
+					if word.Word == visit_word[0] {
+						*word.Count++
+						//fmt.Println("Repetido:", word.Word, "Número:", *word.Count)
+						continue Loop
+					}
+				}
+				aux := new(int)
+				*aux = 1
+
+				words = append(words, Word{visit_word[0], aux})
+				//fmt.Println("Novo:", visit_word[0])
 			}
 		}
+	}
 
-		fmt.Println(words)
-		//return
+	sort.Sort(ByCount(words))
 
+	file, err := os.Create("result.txt")
+	if err != nil {
+		panic(err)
+		return
+	}
+	defer file.Close()
+
+	for _, word := range words {
+		file.WriteString(word.Word + " : " + strconv.Itoa(*word.Count) + "\n")
 	}
 }
 
@@ -99,9 +138,9 @@ func ProcessUrl(url string) [][]string {
 			panic(err)
 		}
 
-		words := regex.FindAllStringSubmatch(body_text, -1)
+		page_words := regex.FindAllStringSubmatch(body_text, -1)
 
-		return words
+		return page_words
 	}
 
 	return nil
