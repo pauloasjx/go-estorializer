@@ -97,7 +97,7 @@ func ProcessHistory(so socketio.Socket) {
 				for _, word := range words {
 					if word.Word == visit_word[0] {
 						*word.Count++
-						so.Emit("count-word", visit_word[0])
+						so.Emit("count-word", Word{word.Word, word.Count})
 						//fmt.Println("Repetido:", word.Word, "Número:", *word.Count)
 						continue Loop
 					}

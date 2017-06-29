@@ -4,21 +4,30 @@ var words = [];
 
 function Word(word, count) {
 	this.word = word;
-	this.count = count*20;
+	this.count = count;
 	this.pos = createVector(random(windowWidth), random(windowHeight));
-	this.vel = createVector(0);
+	this.vel = createVector(random(-1, 1), random(-1, 1));
 	this.col = color(random(255), random(255), random(255));
 
   	this.intersect = function(other){
-    	if(this.pos.sub(other.pos) <= this.count) {
-    		this.vel.mult(-1);
+  		var aux = this.pos.copy();
+    	if(aux.sub(other.pos) >= this.count*5+other.count*5) {
+    		this.vel.mult(-1.1);
+    		other.vel.mult(-1.1);
     	}
+  	}
+
+  	this.check = function() {
+  		if(this.pos.x < 0 || this.pos.y < 0 || this.pos.x > windowWidth || this.pos.y > windowHeight) {
+  			return true;
+  		}
+  		return false;
   	}
 
 	this.draw = function() {
 		fill(this.col);
 		ellipse(this.pos.x, this.pos.y, this.count, this.count);
-		textSize(this.count/2);
+		textSize(this.count/3-this.word.length);
 		fill(255);
 		text(this.word, this.pos.x, this.pos.y);
 	}
@@ -42,8 +51,8 @@ function setup() {
 
 	socket.on('count-word', function(word){
 		for(var i=0; i<words.length; i++) {
-			if(words[i].Word == word) {
-				word[i].count++;
+			if(words[i].word == word.Word) {
+				words[i].count++;
 			}
 		}
 	});
@@ -53,9 +62,14 @@ function setup() {
 function draw() {
 	background(0);
 
-	for(var i=0; i<words.length; i++) {
+	for(var i=words.length-1; i>=0; i--) {
 		words[i].update();
 		words[i].draw();
+
+		if(words[i].check()) {
+			words.splice(i, 1);
+		}
+
 		for(var j=0; j<words.length; j++) {
 			if(words[i] != words[j]) {
 				words[i].intersect(words[j]);
