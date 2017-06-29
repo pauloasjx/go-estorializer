@@ -7,7 +7,7 @@ import (
 	"net/http"
 	//"os"
 	"regexp"
-	"sort"
+	//"sort"
 	"strconv"
 
 	"github.com/googollee/go-socket.io"
@@ -63,7 +63,7 @@ func main() {
 
 	http.Handle("/socket.io/", server)
 	http.Handle("/", http.FileServer(http.Dir("./public")))
-	http.ListenAndServe(":3000", nil)
+	http.ListenAndServe(":5000", nil)
 
 }
 
@@ -97,6 +97,7 @@ func ProcessHistory(so socketio.Socket) {
 				for _, word := range words {
 					if word.Word == visit_word[0] {
 						*word.Count++
+						so.Emit("count-word", visit_word[0])
 						//fmt.Println("Repetido:", word.Word, "Número:", *word.Count)
 						continue Loop
 					}
@@ -104,14 +105,16 @@ func ProcessHistory(so socketio.Socket) {
 				aux := new(int)
 				*aux = 1
 
+				so.Emit("new-word", Word{visit_word[0], aux})
 				words = append(words, Word{visit_word[0], aux})
 				//fmt.Println("Novo:", visit_word[0])
 			}
 		}
 
-		sort.Sort(ByCount(words))
+		return
+		//sort.Sort(ByCount(words))
 
-		so.Emit("words", words)
+		//so.Emit("words", words)
 
 		/*
 			file, err := os.Create("result.txt")
