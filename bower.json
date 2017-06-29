@@ -1,0 +1,20 @@
+{
+  "name": "goestorializer",
+  "homepage": "https://github.com/palvs/goestorializer",
+  "authors": [
+    "Paulo Alves <14147326@uepg.br>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "p5.js": "p5js#^0.5.11"
+  }
+}

@@ -78,20 +78,21 @@ func main() {
 				//fmt.Println("Novo:", visit_word[0])
 			}
 		}
+
+		sort.Sort(ByCount(words))
+
+		file, err := os.Create("result.txt")
+		if err != nil {
+			panic(err)
+			return
+		}
+		defer file.Close()
+
+		for _, word := range words {
+			file.WriteString(word.Word + " : " + strconv.Itoa(*word.Count) + "\n")
+		}
 	}
 
-	sort.Sort(ByCount(words))
-
-	file, err := os.Create("result.txt")
-	if err != nil {
-		panic(err)
-		return
-	}
-	defer file.Close()
-
-	for _, word := range words {
-		file.WriteString(word.Word + " : " + strconv.Itoa(*word.Count) + "\n")
-	}
 }
 
 func ProcessUrl(url string) [][]string {
