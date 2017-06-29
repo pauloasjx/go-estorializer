@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
+	//"os"
 	"regexp"
 	"sort"
 	"strconv"
 
+	"github.com/googollee/go-socket.io"
 	"github.com/jaytaylor/html2text"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -39,6 +40,35 @@ func (slice ByCount) Swap(i, j int) {
 }
 
 func main() {
+	server, err := socketio.NewServer(nil)
+	if err != nil {
+		panic(err)
+	}
+
+	server.On("connection", ProcessHistory)
+
+	/*
+		server.On("connection", func(so socketio.Socket) {
+			fmt.Println("on connection")
+			so.Join("chat")
+			so.On("chat message", func(msg string) {
+				log.Println("emit:", so.Emit("chat message", msg))
+				so.BroadcastTo("chat", "chat message", msg)
+			})
+			so.On("disconnection", func() {
+				log.Println("on disconnect")
+			})
+		})
+	*/
+
+	http.Handle("/socket.io/", server)
+	http.Handle("/", http.FileServer(http.Dir("./public")))
+	http.ListenAndServe(":3000", nil)
+
+}
+
+func ProcessHistory(so socketio.Socket) {
+
 	var words = []Word{}
 
 	database, err := sql.Open("sqlite3", "./History")
@@ -81,16 +111,20 @@ func main() {
 
 		sort.Sort(ByCount(words))
 
-		file, err := os.Create("result.txt")
-		if err != nil {
-			panic(err)
-			return
-		}
-		defer file.Close()
+		so.Emit("words", words)
 
-		for _, word := range words {
-			file.WriteString(word.Word + " : " + strconv.Itoa(*word.Count) + "\n")
-		}
+		/*
+			file, err := os.Create("result.txt")
+			if err != nil {
+				panic(err)
+				return
+			}
+			defer file.Close()
+
+			for _, word := range words {
+				file.WriteString(word.Word + " : " + strconv.Itoa(*word.Count) + "\n")
+			}
+		*/
 	}
 
 }
