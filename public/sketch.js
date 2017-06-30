@@ -1,5 +1,4 @@
 
-var socket;
 var words = [];
 
 function Word(word, count) {
@@ -42,7 +41,7 @@ function setup() {
 	createCanvas(windowWidth, windowHeight)
 	background(0);
 	noStroke();
-
+/*
 	socket = io.connect();
 
 	socket.on('new-word', function(word){
@@ -56,7 +55,7 @@ function setup() {
 			}
 		}
 	});
-
+*/
 }
 
 function draw() {

@@ -16,6 +16,5 @@
   ],
   "dependencies": {
     "p5.js": "p5js#^0.5.11",
-    "socket.io": "^2.0.3"
   }
 }
